@@ -1,7 +1,7 @@
 {
 	"pages": [{
 			//pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
-			"path": "pages/new/new",
+			"path": "pages/music-player/index",
 			"style": {
 				"navigationBarTitleText": "最新",
 				"enablePullDownRefresh": true
@@ -81,7 +81,7 @@
 		"borderStyle": "black",
 		"backgroundColor": "#ffffff",
 		"list": [{
-				"pagePath": "pages/new/new",
+				"pagePath": "pages/music-player/index",
 				"iconPath": "static/index-0.png",
 				"selectedIconPath": "static/index-1.png",
 				"text": "最新"

@@ -28,8 +28,8 @@
 			login(e) {
 				console.log("得到账号:"+ e.detail.value.nameValue + ';得到密码:' + e.detail.value.passwordValue)
 				this.axios.request({
-				    url:'/web/rdc/applSuDet/listMsettAuditMedInfo',
-				    method:'get',
+				    url:'/main-cloud/musicPlayer/test',
+				    method:'post',
 				    param:{}
 				}).then(function({data}){
 				    console.log(data)
