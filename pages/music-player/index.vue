@@ -1,278 +1,348 @@
 <template>
-	<view class="">
-		<view class="content">
-			<view class="player-videodisc">
-				<image src="../../static/record.png" class="" @click="goDetail"></image>
-				<image :src="audioData[0].view_image" class="rotateImg" :style="styleObj"></image>
-			</view>
-			<view class="player-box">
-				<view class="player-slider">
-					<view class="player-currentTime">
-						{{audioCurTime[0]}}:{{audioCurTime[1]}}
+	<view class="album-page">
+		<cu-custom class="nav-bar"  :isBack="true" :bgImgBlur="bgimg" backText="返回" :content="album.name">
+		</cu-custom>
+		<scroll-view scroll-y="true" class="page-content" @scroll="scrollpage" :style="{top:customBar*2+'rpx'}" >
+			<view class="album-top">
+				<view class="bg" :style="'background-image:url(' + bgimg + ')'"></view>
+				<view class="bg1"></view>
+				<view class="album-con">
+					<view class="flex-box">
+						<view class="img-info">
+							<image class="img" :src="bgimg"></image>
+							<view class="count">344.5</view>
+						</view>
+						<view class="info-con flex-item">
+							<view class="title">{{ album.name }}</view>
+							<view v-if="album.creator" class="avator-box flex-box">
+								<image class="avator" :src="album.creator.avatarUrl"></image>
+								{{ album.creator.nickname }}
+								<view class="iconfont">&#xe605;</view>
+							</view>
+							<view class="desc-box flex-box">
+								<view class="desc">{{ album.description }}</view>
+								<!-- <view class="iconfont">&#xe605;</view> -->
+							</view>
+						</view>
 					</view>
-					<slider class="slider" min="0" :max="duration" :value="currentTime" activeColor="#ccc" backgroundColor="#eee"
-					 block-size="16" @change="changeProgress" />
-					<view class="player-duration">
-						<!-- 音频总时长用的是后端的数据，如果用innerAudioContext对象的duration在切换歌曲的时候会出现计算错误的情况 -->
-						{{longth}}
-						<!-- {{audioDuration[0]}}:{{audioDuration[1]}} -->
+					<!-- <view class="album-bot flex-box">
+						<view class="flex-item">
+							<view class="iconfont">&#xe607;</view>
+							<view class="txt">{{ album.commentCount }}</view>
+						</view>
+						<view class="flex-item">
+							<view class="iconfont">&#xe639;</view>
+							<view class="txt">{{ album.shareCount }}</view>
+						</view>
+						<view class="flex-item">
+							<view class="iconfont">&#xe60e;</view>
+							<view class="txt">下载</view>
+						</view>
+						<view class="flex-item">
+							<view class="iconfont">&#xe61e;</view>
+							<view class="txt">多选</view>
+						</view>
+					</view> -->
+				</view>
+			</view>
+			<view class="album-list">
+				<view class="title-bar flex-box">
+					<view class="play">
+						<text class="iconfont">&#xe710;</text>
+						播放全部(共30首歌曲)
 					</view>
 				</view>
-				<view class="play-bar">
-					<view class="" @click='pre'>
-						<text class="cuIcon-backwardfill" style="color: #ccc;"></text>
-					</view>
-					<view class="play-menu">
-						<text class="cuIcon-playfill" style="color: #ccc;" :class="isPlay?'cuIcon-stop':'cuIcon-playfill'" @tap="playMusic"></text>
-					</view>
-					<view class="" @click='next'>
-						<text class="cuIcon-play_forward_fill" style="color: #ccc;"></text>
-					</view>
-				</view>
+				<mu-list :list="targetMuList" :isNav="false"></mu-list>
+				
 			</view>
-		</view>
-		<view class="play-list">
-			<view class="" style="position: relative;">
-				播放列表
-				<view class="text-underline">
-				</view>
-			</view>
-		</view>
-		<view class="play-list-content" v-for="(item,index) in audioData">
-			<view class="play-list-content-title">
-				{{item.name}}
-			</view>
-			<view class="play-list-content-desc">
-				<text>{{item.longth}}</text><text>|</text><text>{{item.num}}人学过</text>
-			</view>
-		</view>
+		</scroll-view>
 	</view>
 </template>
 
 <script>
-	const audioContext = uni.createInnerAudioContext();
-	audioContext.autoplay = false;
-	export default {
-		data() {
-			return {
-				audioData: [{
-						file: "http://app.tiantai.com.cn/uploads/20200819/a25100936ec5d372c6805e5b476dbd59.mp3",
-						id: 3,
-						longth: "02:49",
-						music_id: 1,
-						name: "歌曲1",
-						num: 12,
-						view_image: "http://app.tiantai.com.cn/uploads/20200818/7f62a7cc3ca42c3e0fb130e79aa8cb9f.jpg"
-					},
-					{
-						file: "http://app.tiantai.com.cn/uploads/20200819/7f88f2850ad50d8cc0ab1301579368ec.mp3",
-						id: 1,
-						longth: "05:02",
-						music_id: 1,
-						name: "歌曲2",
-						num: 666,
-						view_image: "http://app.tiantai.com.cn/uploads/20200818/7f62a7cc3ca42c3e0fb130e79aa8cb9f.jpg"
-					},
-					{
-						file: "http://app.tiantai.com.cn/uploads/20200819/7103e314a4c998dcc5e2a75816d5bc4e.mp3",
-						id: 2,
-						longth: "03:12",
-						music_id: 1,
-						name: "歌曲3",
-						num: 4444,
-						view_image: "http://app.tiantai.com.cn/uploads/20200818/7f62a7cc3ca42c3e0fb130e79aa8cb9f.jpg",
-					}
-				],
-				duration: '100',
-				currentTime: '0',
-				audioDuration: ['0', '00'],
-				audioCurTime: ['0', '00'],
-				longth: '',
-				isPlay: false,
-				timer: null,
-				system: '',
-				styleObj: {
-					borderRadius: '50%',
-					height: '80rpx',
-					width: '80rpx',
-					position: 'absolute',
-					top: '50%',
-					left: '50%',
-					transform: 'translate(-50%,-50% )',
-					transformOrigin: 'center'
-				},
-				rotateTimer: null,
-				rotateDeg: 0
+// 防抖
+function debounce(fn, wait = 10) {    
+	var timeout = null;    
+	return function() {        
+		if(timeout !== null) clearTimeout(timeout);        
+		timeout = setTimeout(fn, wait);    
+	}
+}
+var that = null
+import muList from './musiclist.vue'
+export default {
+	data() {
+		return {
+			// 专辑
+			album: {},
+			// 背景图片
+			bgimg:'',
+			// 播放列表
+			playList: [],
+			scrollTop: 20,
+			scrollY: 0
+		};
+	},
+	components:{
+		muList
+	},
+	computed:{
+		targetMuList(){
+			var temp = {
+				id: '1',
+				name: '你的名字',
+				picUrl: '../../static/record.png',
+				n1: '22222222',
+				n2: '33333333'
 			}
+			return [temp, temp, temp]
+			// if(!this.album.tracks) return [];
+			// const t = this.album.tracks.slice(0,25);
+			// return t.map(val=>{
+			// 	return{
+			// 		id:val.id,
+			// 		name:val.name,
+			// 		picUrl:val.al.picUrl,
+			// 		n1:val.ar[0].name,
+			// 		n2:val.al.name
+			// 	}
+			// })
 		},
-		onUnload() {
-			audioContext.destroy()
+		customBar(){
+			return this.CustomBar
+		}
+	},
+	created() {
+		that = this
+	},
+	onLoad(options) {
+		this.getData()
+	},
+	methods: {
+		getData(id) {
+			// res.playlist.description = res.playlist.description.slice(0, 27)
+			const album = {};
+			this.bgimg = 'https://p1.music.126.net/g8pebJh7eOKwznooTm4VZw==/109951165029875607.jpg'
+			this.album = {};
+			this.playList = [];
 		},
-		onLoad(e) {
-			let a = this
-			audioContext.src = a.audioData[0].file
-			a.longth = a.audioData[0].longth
-			a.system = uni.getSystemInfoSync().platform
-			audioContext.onEnded((e) => {
-				clearInterval(a.timer)
-				clearInterval(a.rotateTimer)
-				a.timer = null
-				a.rotateTimer = null
-				a.isPlay = false
-				audioContext.seek(0);
-				a.audioCurTime = ['0', '00']
-				a.currentTime = '0'
-			})
+		scrollpage (e) {
+			this.scrollY = e.detail.scrollTop
+			this.scroll()
 		},
-		onShow() {},
-		onReady() {
-			let a = this
-			uni.setNavigationBarTitle({
-				title: a.audioData[0].name
-			});
-		},
-		methods: {
-			goDetail() {
-				// 跳转到播放页面
-				uni.navigateTo({
-					url: './play_list'
-				})
-			},
-			// audio player part : in this part we'd like to show the similar layouts and functions as wangyi music. created by Hsi (1563792476@qq.com)
-			// in order to avoid syntax error of playing time , use backend data to show duration time instead of calculating by yourself
-			next() {
-				// next song function, the main thought of next song function is that we should find out the index of song which is playing. 
-				// first of all , clear the timer and stop rotating cover, and then find out the index 
-				clearInterval(this.rotateTimer)
-				this.rotateTimer = null
-				let src = audioContext.src
-				//tips: (complex array may cause performance issues)
-				this.audioData.filter((currentValue, index, arr) => {
-					if (currentValue.file == src) {
-						if (index + 1 >= arr.length) {
-							clearInterval(this.timer)
-							let timer = null
-							this.isPlay = false;
-							// once click next button , pause and reset playingtime 
-							audioContext.seek(0);
-							this.currentTime = '0'
-							this.audioCurTime = ['0', '00']
-							audioContext.src = this.audioData[0].file
-							this.longth = this.audioData[0].longth
-							uni.setNavigationBarTitle({
-								title: this.audioData[0].name
-							})
-						} else {
-							clearInterval(this.timer)
-							let timer = null
-							this.isPlay = false;
-							audioContext.seek(0);
-							this.currentTime = '0'
-							this.audioCurTime = ['0', '00']
-							audioContext.src = this.audioData[index + 1].file
-							this.longth = this.audioData[index + 1].longth
-							uni.setNavigationBarTitle({
-								title: this.audioData[index + 1].name
-							})
-						}
-					} else {}
-				});
-			},
-			pre() {
-				clearInterval(this.rotateTimer)
-				this.rotateTimer = null
-				let src = audioContext.src
-				this.audioData.filter((currentValue, index, arr) => {
-					if (currentValue.file == src) {
-						if (index == 0) {
-							clearInterval(this.timer)
-							let timer = null
-							this.isPlay = false;
-							audioContext.seek(0);
-							this.currentTime = '0'
-							this.audioCurTime = ['0', '00']
-							audioContext.src = this.audioData[arr.length - 1].file
-							this.longth = this.audioData[arr.length - 1].longth
-							uni.setNavigationBarTitle({
-								title: this.audioData[arr.length - 1].name
-							});
-						} else {
-							clearInterval(this.timer)
-							let timer = null
-							this.isPlay = false;
-							audioContext.seek(0);
-							this.currentTime = '0'
-							this.audioCurTime = ['0', '00']
-							audioContext.src = this.audioData[index - 1].file
-							this.longth = this.audioData[index - 1].longth
-							uni.setNavigationBarTitle({
-								title: this.audioData[index - 1].name
-							});
-						}
-					} else {}
-				});
-			},
-			playMusic() {
-				// reset duration time by clicking midbutton only 
-				let duration = audioContext.duration;
-				let currentTime = audioContext.currentTime;
-				this.duration = duration;
-				this.currentTime = currentTime;
-				this.audioCurTime[0] = Math.floor(Math.floor(currentTime) / 60);
-				this.audioCurTime[1] = Math.floor(currentTime) % 60;
-				if (this.isPlay) {
-					this.isPlay = false;
-					clearInterval(this.timer)
-					clearInterval(this.rotateTimer)
-					this.timer = null
-					this.rotateTimer = null
-					audioContext.pause();
-				} else {
-					this.isPlay = true;
-					this.rotateTimer = setInterval(() => {
-						this.rotateDeg++
-						this.styleObj.transform = `translate(-50%,-50%) rotate(${this.rotateDeg}deg)`
-					}, 50)
-					audioContext.play();
-					this.timer = setInterval(() => {
-						this.currentTime++
-						if (this.audioCurTime[1] > 58) {
-							this.audioCurTime[0]++
-							this.audioCurTime[1] = 0
-							this.audioCurTime[1]++
-						} else {
-							this.audioCurTime[1]++
-						}
-					}, 1000)
-				}
-			},
-			changeProgress(e) {
-				// ios 拖动slider 会出现漂移，定位不准，苹果暂时用拖动时暂停播放来规避
-				// ios pause music when dragging , Android could still play
-				audioContext.seek(e.detail.value);
-				// pause music when dragging , in order to load timer repeatly
-				if (this.system == 'ios') {
-					this.audioCurTime[0] = Math.floor(Math.floor(e.detail.value) / 60);
-					this.audioCurTime[1] = Math.floor(e.detail.value) % 60;
-					clearInterval(this.timer)
-					clearInterval(this.rotateTimer)
-					this.timer = null
-					this.rotateTimer = null
-					this.isPlay = false
-					audioContext.pause();
-				} else {
-					clearInterval(this.timer)
-					clearInterval(this.rotateTimer)
-					this.timer = null
-					this.rotateTimer = null
-					this.isPlay = false;
-					this.playMusic()
+		// 设置背景条
+		scroll: debounce(() => {
+			if (that.scrollY < 5) {
+				that.scrollTop = 20
+			} else {
+				if (that.scrollY < 300) {
+					that.scrollTop = - parseInt(that.scrollY) + 20
 				}
 			}
+		}),
+		goBack () {  // 返回上一页
+			uni.navigateBack();
 		}
 	}
+};
 </script>
 
-<style>
-	@import url("index.css");
+<style lang="scss" scoped>
+$bgheight: 688rpx;
+$bgtop: -44px;
+	
+.nav-bar{
+	position: relative;
+	background-position: 0 0px;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+.bg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	filter: blur(35px);
+	background-position: 0 0px;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.bg1 {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	background: rgba(0, 0, 0, 0.2);
+	z-index: 2;
+}
+
+.page-content {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
+.album-top {
+	position: relative;
+	top: $bgtop;
+	height: $bgheight;
+	padding-top:44px;
+	overflow: hidden;
+	background: #fff;
+	.bg{
+		background-size: 100%;
+	}
+	.album-con {
+		position: absolute;
+		width: 100%;
+		padding: 46rpx 24rpx 0 30rpx;
+		z-index: 10;
+	}
+}
+.album-bot {
+	padding-top: 42rpx;
+	color: #fff;
+	text-align: center;
+	.iconfont {
+		font-size: 44rpx;
+	}
+}
+.img-info {
+	position: relative;
+	width: 280rpx;
+	height: 280rpx;
+	margin-right: 40rpx;
+	border-radius: 10rpx;
+	overflow: hidden;
+	&:before {
+		content: ' ';
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 40rpx;
+		z-index: 2;
+		background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.2), transparent);
+	}
+	.img {
+		width: 280rpx;
+		height: 280rpx;
+	}
+	.count {
+		position: absolute;
+		top: 0;
+		right: 0;
+		padding-left: 25rpx;
+		line-height: 34rpx;
+		color: #fff;
+		font-size: 24rpx;
+		z-index: 10;
+		background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAMAAACahl6sAAAAqFBMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8j1z1tAAAAN3RSTlMA9wcC+/3w4A/RoQv0m4s6IBkU7eeRK73kxaZtW+rc1cmxe3UmwbiWQNmqgWZUzUY1ME4dhmGuJ2Z0kQAABVtJREFUeNrtnYtWGkEQRFsEeSmgII8EVBASUFHx1f//ZwmJRwaZYhndjdU5c//gQp8DVTvTK5FIJBKJRCKRSCQSiUQikcj/yWI6vRfzNEYz/U23NhbLlF70jZ7hr+W+pQ6FoxOxyXhP12neiEVyZd3gdiH2uFYfP0tijP2mehk8iy3miui1xRLfFHNaFTv0dAutvpihq1uZmPmp1yRqRuZLVxyol+5cLOB+9nMwZ52G8OOKSLWWVx97TzlhZ01EZDxRL8UHIcf92ZAl/ZZ6+UE+XxsiUjoF8zWinq9NEZH2BZivO+HFJyLyPFAvL4/Cil9ESkcF9XFIO19ARGRRVi9ndaHEDVPvksp38FP/7VgIQSJLTirq5fByX+jAIkvq5+rlnG++tovI/uWheqmwlUZAZMXxlXo5+M41X0DEZXqmXspUpaSuOBJAbrTq8GhLSSzi8jjUv/CWkusimLui/oa4lNxVRHLXYL5ISkmPCKLRYS4lPSIYFOovCEpJXVGRJGCoz59++XwBEci4R1pKIhFMv0VZegeL4FCfDyklGUSWoZ6vlAQiSTw32UpJN/lJMm6o5yolkUgy92WqUjJcxA31RKXkJ0RwqN+7TpwvLpFlqGcpJYNEQkL9MOtSEotcSRIo1DOU3kEigaH+bCoQShEY6vUKlpKcIjDU41IyS5EXSSY81M/q4oNXBIR6VHoTi4BQD0pJahEQ6kHpnZ3IUAIIDPWF96U3u8hGqEelJL/IWqjHpaQFERjqC0er0siECAj12c6Xm4ckRW6a20tJMyKvoR6WknZEcKgf9EXEkggO9b22LREY6pelpC0RHOq7fWMiONRPxlmJdCQLcKjPP1VtieBQX5wbE8GhvtOwJbIM9bCUtCWCQ33xzpgIDvWVXLoiE8macQck4YYxERjqy/vWRFCofzInItKeqIdxiiI9yRwc6msWRXyhfmBSxBfqFzZFNkP9g1UROVkP9TfpiVzIv6VRVodLqyLv/7D0jYps/IW8Nyni+VNfNSjii1kVSU/kVjIHB9+6ORF/FTEUYyKgHBqUjIlMZ+rjcCppipQlY47BOoNyQ0yJoEq7JmJJpH4Om1NLIieVAjzAbUgEPSjJn1YlA5FzyYj7Mn6eaEhkmTvQtRNLIjdNeBHIksjiFp+CyExkJmlT+lmA5wYsiTwP8PVFQyLti20XSs2IVE/zGZ+mwyJnkh79VsKlaxsi40niiUALIug44IF7BtiAyLyb7anZZJGipECjs9s5ZnKR3NPejifLuUUeimDBzeZUMYs0fgQ8SOcVAU/R0X2YLEW66ZXSyTfgSEUeh19+JxGIhJbSX39L1G00PlxKM9zbBSIhpTTHTWogElBKk9xt/5xIfUazAtXtZ8JLaaL9D64IX334L0Tq51w7LNySJqyUJttaA0QSp4pujxAWCS+lb9vydbiZeudSmnHXVrDITZNz+1mgyOKWdR8dEIGlNO2GwBCR5wHxzka36kgopXvUWzRdEapSOiORfot906ybTINL6RnHVHlEUCltYFtussi8++WrQtIQaXQIlreEinhLaYZ1OoEi+Z1L6R+EW9ehCC6lzyjfs4BElqU0zRKwQJHCeinNUB9+VgSX0rxvh/GJ5EagPnwifl+POryV0jT14WdEjq+I6sMPilCV0p8R2Zf6jKs+/KAIKqUH5FO1IXKght+NqCt4F3fvwtu3QL+qP4GybqFwZGKq/jBUTJnldQO78F1VbbxgJIHSHpgqivowhIp/qoiKnh05aZqfqlceiOvDMC51jRlb0bM79RZrfRhKqXb46lExOlVv5O5G19ejB/bQEYlEIpFIJBLJkF8r2nFUwcJuMQAAAABJRU5ErkJggg==)
+			no-repeat;
+		background-size: 25rpx 25rpx;
+		transform: scale(0.8);
+	}
+}
+.info-con {
+	.title {
+		margin-bottom: 14rpx;
+		color: #fff;
+		line-height: 46rpx;
+		font-weight: 600;
+	}
+}
+.avator-box {
+	margin-bottom: 26rpx;
+	align-items: center;
+	color: #ccc0ba;
+	font-size: 25rpx;
+	.avator {
+		width: 60rpx;
+		height: 60rpx;
+		margin-right: 12rpx;
+		border-radius: 60rpx;
+	}
+}
+.desc-box {
+	align-items: center;
+	line-height: 40rpx;
+	color: #ccc0ba;
+	font-size: 23rpx;
+}
+.album-list {
+	position: relative;
+	top:- 84px;
+	background: #fff;
+	border-radius: 36rpx 36rpx 0 0;
+	z-index: 100;
+	.title-bar{
+		padding:10rpx;
+		justify-content: space-between;
+		.iconfont{
+			margin-left: 16rpx;
+			margin-right: 16rpx;
+			font-size: 40rpx;
+		}
+		.play{
+			line-height: 80rpx;
+			color:#252621;
+			font-weight: 600;
+			font-size: 32rpx;
+		}
+		// .collect{
+		// 	width:228rpx;
+		// 	height:80rpx;
+		// 	text-align: center;
+		// 	line-height: 80rpx;
+		// 	border-radius: 80rpx;
+		// 	color:#fff;
+		// 	background: #fb2b21;
+		// }
+	}
+	.item {
+		align-items: center;
+		height: 120rpx;
+	}
+	.con {
+		padding-right: 40rpx;
+		align-items: center;
+		justify-content: space-between;
+	}
+	.num {
+		width: 84rpx;
+		text-align: center;
+		line-height: 120rpx;
+		color: #999;
+		font-size: 24rpx;
+		&.on {
+			color: #ff3a3a;
+		}
+	}
+	.tit {
+		margin-right: 20rpx;
+		color: #333;
+		line-height: 48rpx;
+		font-size: 32rpx;
+	}
+	.count {
+		margin-right: 20rpx;
+		color: #ccc;
+		line-height: 48rpx;
+		font-size: 24rpx;
+		transform: scale(0.84);
+	}
+	.icon {
+		width: 56rpx;
+		height: 20rpx;
+	}
+	.desc {
+		color: #999;
+		font-size: 24rpx;
+		line-height: 40rpx;
+	}
+}
 </style>
+
