@@ -1,88 +1,51 @@
 <template>
-	<view class="player-page">
-		<cu-custom class="nav-bar" :isBack="true" backText="返回" :content="song.name" :require="false">
-		</cu-custom>
-		<!-- <view class="content" :style="{marginTop:customBar+'px'}"> -->
+	<view class="">
 		<view class="content">
-			<view class="bg-img-box" :style="'background-image:url('+song.picUrl+')'">
-				
+			<view class="player-videodisc">
+				<image src="../../static/record.png" class="" @click="goDetail"></image>
+				<image :src="audioData[0].view_image" class="rotateImg" :style="styleObj"></image>
 			</view>
-			<!-- <view class="ear-phone" :style="{top:customBar*2+'rpx'}">
-				<image class="img" src="https://s3.music.126.net/mobile-new/img/needle-ip6.png?be4ebbeb6befadfcae75ce174e7db862="></image>
-			</view> -->
-			<view class="img-box" :class="[isPlay ? '' : 'stoped']" :style="{top:customBar*2+50+'rpx'}">
-				<view class="circle">
-					<image class="img" :src="song.picUrl" mode=""></image>
+			<view class="player-box">
+				<view class="player-slider">
+					<view class="player-currentTime">
+						{{audioCurTime[0]}}:{{audioCurTime[1]}}
+					</view>
+					<slider class="slider" min="0" :max="duration" :value="currentTime" activeColor="#ccc" backgroundColor="#eee"
+					 block-size="16" @change="changeProgress" />
+					<view class="player-duration">
+						<!-- 音频总时长用的是后端的数据，如果用innerAudioContext对象的duration在切换歌曲的时候会出现计算错误的情况 -->
+						{{longth}}
+						<!-- {{audioDuration[0]}}:{{audioDuration[1]}} -->
+					</view>
 				</view>
-			</view>
-			<view class="lyric-box">
-				<view class="ric">{{lytop}}</view>
-				<view class="ric cur">{{lycur}}</view>
-				<view class="ric">{{lybot}}</view>
-			</view>
-			<view class="btn-box">
-				<view class="flex-item">
-					<text class="iconfont">&#xe615;</text>
+				<view class="play-bar">
+					<view class="" @click='pre'>
+						<text class="cuIcon-backwardfill" style="color: #ccc;"></text>
+					</view>
+					<view class="play-menu">
+						<text class="cuIcon-playfill" style="color: #ccc;" :class="isPlay?'cuIcon-stop':'cuIcon-playfill'" @tap="playMusic"></text>
+					</view>
+					<view class="" @click='next'>
+						<text class="cuIcon-play_forward_fill" style="color: #ccc;"></text>
+					</view>
 				</view>
-				<view class="flex-item iconfont">&#xe628;</view>
-				<view class="flex-item iconfont">&#xe60e;</view>
-			</view>
-			<view class="slider-bar">
-				<view class="time start">{{curPlayTimeNum}}</view>
-				<slider class="line" :value="curPlayTime" :min="0" :max="playTime" @change="sliderChange" block-size="15"
-				 backgroundColor="rgba(255,255,255,.5)" activeColor="rgba(255,255,255,.5)" />
-				<view class="time end">{{playTimeNum}}</view>
-			</view>
-			<view class="btn-groups flex-box">
-				<view class="flex-item" @click="setPlayModel">
-					<view v-if="playModel==0" class="iconfont">&#xe66c;</view>
-					<view v-if="playModel==1" class="iconfont">&#xe66b;</view>
-					<view v-if="playModel==2" class="iconfont">&#xe66d;</view>
-				</view>
-				<view class="flex-item" @click="prev">
-					<view class="iconfont">&#xe78a;</view>
-				</view>
-				<view class="play-btn flex-item" @click="play">
-					<view v-if="!isPlay" class="iconfont">&#xe638;</view>
-					<view v-if="isPlay" class="iconfont">&#xe76a;</view>
-				</view>
-				<view class="flex-item" @click="next(false)">
-					<view class="iconfont">&#xe7a5;</view>
-				</view>
-				<!-- <view class="flex-item iconfont" @click="openList" id="list">&#xe634;</view> -->
 			</view>
 		</view>
-		<!-- <view class="poplist-box" :class="[opentList?'':'hide']">
-			<view class="title">
-				<text class="total">当前播放(25)</text>
-				<text class="model"  v-if="playModel==0" @click="setPlayModel">
-					<text class="iconfont">&#xe66c;</text>
-					<text>列表循环</text>
-				</text>
-				<text class="model"  v-if="playModel==1" @click="setPlayModel">
-					<text class="iconfont">&#xe66b;</text>
-					<text>随机播放</text>
-				</text>
-				<text class="model"  v-if="playModel==2" @click="setPlayModel">
-					<text class="iconfont">&#xe66d;</text>
-					<text>单曲循环</text>
-				</text>
-			</view>
-			<scroll-view scroll-y="true" style="height: 578rpx;">
-				<view class="item" :class="[index == curPlayIndex?' current':'']" v-for="(val,index) in copyAudioList" :key="index">
-					<view class="img num" v-if="val.desc">
-						{{index + 1}}
-					</view>
-					<image  v-if="!val.desc" class="img" :src="val.picUrl" mode=""></image>
-					<view class="text ellipsis" @click="initPlay(val.id,index)">
-						<text class="name ellipsis">{{val.name}}</text>
-						<text class="ar ellipsis">{{val.n1}} · {{val.n2}}</text>
-					</view>
-					<text class="cuIcon-close" @click="listCloseOne(index)"></text>
+		<view class="play-list">
+			<view class="" style="position: relative;">
+				播放列表
+				<view class="text-underline">
 				</view>
-			</scroll-view>
-		</view> -->
-		
+			</view>
+		</view>
+		<view class="play-list-content" v-for="(item,index) in audioData">
+			<view class="play-list-content-title">
+				{{item.name}}
+			</view>
+			<view class="play-list-content-desc">
+				<text>{{item.longth}}</text><text>|</text><text>{{item.num}}人学过</text>
+			</view>
+		</view>
 	</view>
 </template>
 
@@ -92,348 +55,224 @@
 	export default {
 		data() {
 			return {
-				song: {
-					id: '',
-					url: '',
-					name: '你的名字',
-					singer: '',
-					time: 0,
-					picUrl: 'https://p1.music.126.net/g8pebJh7eOKwznooTm4VZw==/109951165029875607.jpg',
+				audioData: [{
+						file: "http://app.tiantai.com.cn/uploads/20200819/a25100936ec5d372c6805e5b476dbd59.mp3",
+						id: 3,
+						longth: "02:49",
+						music_id: 1,
+						name: "歌曲1",
+						num: 12,
+						view_image: "http://app.tiantai.com.cn/uploads/20200818/7f62a7cc3ca42c3e0fb130e79aa8cb9f.jpg"
+					},
+					{
+						file: "http://app.tiantai.com.cn/uploads/20200819/7f88f2850ad50d8cc0ab1301579368ec.mp3",
+						id: 1,
+						longth: "05:02",
+						music_id: 1,
+						name: "歌曲2",
+						num: 666,
+						view_image: "http://app.tiantai.com.cn/uploads/20200818/7f62a7cc3ca42c3e0fb130e79aa8cb9f.jpg"
+					},
+					{
+						file: "http://app.tiantai.com.cn/uploads/20200819/7103e314a4c998dcc5e2a75816d5bc4e.mp3",
+						id: 2,
+						longth: "03:12",
+						music_id: 1,
+						name: "歌曲3",
+						num: 4444,
+						view_image: "http://app.tiantai.com.cn/uploads/20200818/7f62a7cc3ca42c3e0fb130e79aa8cb9f.jpg",
+					}
+				],
+				duration: '100',
+				currentTime: '0',
+				audioDuration: ['0', '00'],
+				audioCurTime: ['0', '00'],
+				longth: '',
+				isPlay: false,
+				timer: null,
+				system: '',
+				styleObj: {
+					borderRadius: '50%',
+					height: '80rpx',
+					width: '80rpx',
+					position: 'absolute',
+					top: '50%',
+					left: '50%',
+					transform: 'translate(-50%,-50% )',
+					transformOrigin: 'center'
 				},
-				playModel: 0,
-				isPlay: true,
-				playTime: 0,
-				curPlayTime: 0,
-				curPlayIndex: 0,
-				lyric:[],
-				lytop:'',
-				lycur:'',
-				lybot:'',
-				showList: false,
-				copyAudioList:[]
+				rotateTimer: null,
+				rotateDeg: 0
 			}
 		},
 		onUnload() {
+			audioContext.destroy()
 		},
 		onLoad(e) {
+			let a = this
+			audioContext.src = a.audioData[0].file
+			a.longth = a.audioData[0].longth
+			a.system = uni.getSystemInfoSync().platform
+			audioContext.onEnded((e) => {
+				clearInterval(a.timer)
+				clearInterval(a.rotateTimer)
+				a.timer = null
+				a.rotateTimer = null
+				a.isPlay = false
+				audioContext.seek(0);
+				a.audioCurTime = ['0', '00']
+				a.currentTime = '0'
+			})
 		},
 		onShow() {},
 		onReady() {
-		},
-		computed: {
-			playTimeNum() {
-				return this.$util.formatTime(this.playTime)
-			},
-			curPlayTimeNum() {
-				return this.$util.formatTime(this.curPlayTime)
-			}
+			let a = this
+			uni.setNavigationBarTitle({
+				title: a.audioData[0].name
+			});
 		},
 		methods: {
-			prev() {
-				console.log('上一首')
+			goDetail() {
+				// 跳转到播放页面
+				uni.navigateTo({
+					url: './play_list'
+				})
 			},
-			openList() {
-				console.log('openList')
+			// audio player part : in this part we'd like to show the similar layouts and functions as wangyi music. created by Hsi (1563792476@qq.com)
+			// in order to avoid syntax error of playing time , use backend data to show duration time instead of calculating by yourself
+			next() {
+				// next song function, the main thought of next song function is that we should find out the index of song which is playing. 
+				// first of all , clear the timer and stop rotating cover, and then find out the index 
+				clearInterval(this.rotateTimer)
+				this.rotateTimer = null
+				let src = audioContext.src
+				//tips: (complex array may cause performance issues)
+				this.audioData.filter((currentValue, index, arr) => {
+					if (currentValue.file == src) {
+						if (index + 1 >= arr.length) {
+							clearInterval(this.timer)
+							let timer = null
+							this.isPlay = false;
+							// once click next button , pause and reset playingtime 
+							audioContext.seek(0);
+							this.currentTime = '0'
+							this.audioCurTime = ['0', '00']
+							audioContext.src = this.audioData[0].file
+							this.longth = this.audioData[0].longth
+							uni.setNavigationBarTitle({
+								title: this.audioData[0].name
+							})
+						} else {
+							clearInterval(this.timer)
+							let timer = null
+							this.isPlay = false;
+							audioContext.seek(0);
+							this.currentTime = '0'
+							this.audioCurTime = ['0', '00']
+							audioContext.src = this.audioData[index + 1].file
+							this.longth = this.audioData[index + 1].longth
+							uni.setNavigationBarTitle({
+								title: this.audioData[index + 1].name
+							})
+						}
+					} else {}
+				});
 			},
-			setPlayModel() {
-				console.log('setPlayModel')
+			pre() {
+				clearInterval(this.rotateTimer)
+				this.rotateTimer = null
+				let src = audioContext.src
+				this.audioData.filter((currentValue, index, arr) => {
+					if (currentValue.file == src) {
+						if (index == 0) {
+							clearInterval(this.timer)
+							let timer = null
+							this.isPlay = false;
+							audioContext.seek(0);
+							this.currentTime = '0'
+							this.audioCurTime = ['0', '00']
+							audioContext.src = this.audioData[arr.length - 1].file
+							this.longth = this.audioData[arr.length - 1].longth
+							uni.setNavigationBarTitle({
+								title: this.audioData[arr.length - 1].name
+							});
+						} else {
+							clearInterval(this.timer)
+							let timer = null
+							this.isPlay = false;
+							audioContext.seek(0);
+							this.currentTime = '0'
+							this.audioCurTime = ['0', '00']
+							audioContext.src = this.audioData[index - 1].file
+							this.longth = this.audioData[index - 1].longth
+							uni.setNavigationBarTitle({
+								title: this.audioData[index - 1].name
+							});
+						}
+					} else {}
+				});
+			},
+			playMusic() {
+				// reset duration time by clicking midbutton only 
+				let duration = audioContext.duration;
+				let currentTime = audioContext.currentTime;
+				this.duration = duration;
+				this.currentTime = currentTime;
+				this.audioCurTime[0] = Math.floor(Math.floor(currentTime) / 60);
+				this.audioCurTime[1] = Math.floor(currentTime) % 60;
+				if (this.isPlay) {
+					this.isPlay = false;
+					clearInterval(this.timer)
+					clearInterval(this.rotateTimer)
+					this.timer = null
+					this.rotateTimer = null
+					audioContext.pause();
+				} else {
+					this.isPlay = true;
+					this.rotateTimer = setInterval(() => {
+						this.rotateDeg++
+						this.styleObj.transform = `translate(-50%,-50%) rotate(${this.rotateDeg}deg)`
+					}, 50)
+					audioContext.play();
+					this.timer = setInterval(() => {
+						this.currentTime++
+						if (this.audioCurTime[1] > 58) {
+							this.audioCurTime[0]++
+							this.audioCurTime[1] = 0
+							this.audioCurTime[1]++
+						} else {
+							this.audioCurTime[1]++
+						}
+					}, 1000)
+				}
+			},
+			changeProgress(e) {
+				// ios 拖动slider 会出现漂移，定位不准，苹果暂时用拖动时暂停播放来规避
+				// ios pause music when dragging , Android could still play
+				audioContext.seek(e.detail.value);
+				// pause music when dragging , in order to load timer repeatly
+				if (this.system == 'ios') {
+					this.audioCurTime[0] = Math.floor(Math.floor(e.detail.value) / 60);
+					this.audioCurTime[1] = Math.floor(e.detail.value) % 60;
+					clearInterval(this.timer)
+					clearInterval(this.rotateTimer)
+					this.timer = null
+					this.rotateTimer = null
+					this.isPlay = false
+					audioContext.pause();
+				} else {
+					clearInterval(this.timer)
+					clearInterval(this.rotateTimer)
+					this.timer = null
+					this.rotateTimer = null
+					this.isPlay = false;
+					this.playMusic()
+				}
 			}
 		}
 	}
 </script>
 
-<style lang="scss">
-	uni-page-body {
-		height: 100%;
-	}
-
-	.player-page {
-		height: 100%;
-		// display: flex;
-		// flex-direction: column;
-	}
-
-	.cu-bar {
-		// border-bottom: 2rpx solid rgba(255, 255, 255, 0.7);
-		width: 100%;
-	}
-
-	.nav-bar {
-		color: #F5F5F5;
-		position: fixed;
-		z-index: 2;
-	}
-
-	.content {
-		// flex: 1;
-		height: 100%;
-		position: relative;
-		overflow: hidden;
-
-		.bg-img-box {
-			width: 100%;
-			height: 100%;
-			filter: blur(25px);
-			background-position: center center;
-			background-repeat: no-repeat;
-			background-size: cover;
-			position: absolute;
-			transform: scale(1.5);
-		}
-
-		.ear-phone {
-			position: absolute;
-			top: 0;
-			left: 330rpx;
-			width: 220rpx;
-			height: 330rpx;
-			z-index: 1;
-
-			.img {
-				height: 100%;
-			}
-
-			&.stop {
-				transform: rotate(-25deg);
-				transform-origin: 1% 0 0;
-			}
-		}
-
-		.img-box {
-			&.stoped {
-				animation-play-state: paused;
-			}
-
-			animation: rotate 12s linear .1s infinite;
-			position: absolute;
-			top: 150rpx;
-			left: 100rpx;
-			width: 550rpx;
-			height: 550rpx;
-			border-radius: 50%;
-			background-color: rgba(255, 255, 255, 0.1);
-			display: flex;
-			align-items: center;
-			justify-content: center;
-
-			.circle {
-				width: 92%;
-				height: 92%;
-				border-radius: 50%;
-				background-color: rgba(255, 255, 255, 0.3);
-				display: flex;
-				align-items: center;
-				justify-content: center;
-
-				.img {
-					width: 70%;
-					height: 70%;
-					border-radius: 50%;
-				}
-			}
-		}
-
-		.lyric-box {
-			position: absolute;
-			bottom: 390rpx;
-			width: 100%;
-			-webkit-mask-image: linear-gradient(to bottom,
-				rgba(255, 255, 255, 0) 0,
-				rgba(255, 255, 255, .6) 15%,
-				rgba(255, 255, 255, 1) 25%,
-				rgba(255, 255, 255, 1) 75%,
-				rgba(255, 255, 255, .6) 85%,
-				rgba(255, 255, 255, 0) 100%);
-			height: 140rpx;
-
-			.ric {
-				text-align: center;
-				color: #F1F1F1;
-				font-size: 30rpx;
-				opacity: 0.8;
-				height: 46rpx;
-				    white-space: nowrap;
-				    overflow: hidden;
-				&.cur {
-					font-size: 32rpx;
-					opacity: 1;
-					color: #8dc63f;
-				}
-			}
-		}
-
-		.btn-box,
-		.btn-groups,
-		.slider-bar {
-			display: flex;
-			position: absolute;
-			width: 100%;
-			color: #F1F1F1;
-		}
-
-		.btn-box {
-			bottom: 250rpx;
-
-			.flex-item {
-				flex: 1;
-				text-align: center;
-				font-size: 54rpx;
-
-				.iconfont {
-					font-size: 54rpx;
-				}
-			}
-
-		}
-
-		.slider-bar {
-			bottom: 160rpx;
-			align-items: center;
-
-			.line {
-				flex: 1;
-			}
-
-			.time {
-				height: 28rpx;
-				line-height: 28rpx;
-				font-size: 24rpx;
-				min-width: 66rpx;
-			}
-
-			.line {
-				margin: 20rpx 20rpx;
-			}
-
-			.start {
-				margin-left: 30rpx;
-			}
-
-			.end {
-				margin-right: 30rpx;
-			}
-		}
-
-		.btn-groups {
-			bottom: 80rpx;
-			font-size: 44rpx;
-
-			.flex-item {
-				text-align: center;
-			}
-
-			.iconfont {
-				font-size: 44rpx;
-			}
-
-			.play-btn {
-				position: relative;
-
-				&::before {
-					content: '';
-					display: block;
-					position: absolute;
-					top: 50%;
-					left: 50%;
-					border: 2rpx solid #F1F1F1;
-					width: 100rpx;
-					height: 100rpx;
-					border-radius: 50%;
-					transform: translateX(-50%) translateY(-50%);
-				}
-			}
-		}
-
-	}
-		.poplist-box{
-			position: fixed;
-			display: block;
-			bottom: 0;
-			left: 3%;
-			height: 700rpx;
-			width: 94%;
-			background-color: #F0F0F0;
-			z-index: 1001;
-			border-radius: 5% 5% 0 0;
-			&.hide{
-				bottom:-700rpx;
-			}
-			transition: all .15s linear;
-			padding: 0 0 0 20rpx;
-			.title{
-				display: flex;
-				justify-content: space-between;
-				width: 100%;
-				height: 120rpx;
-				line-height: 120rpx;
-				font-size: 34rpx;
-				.total{
-					font-size: 40rpx;
-				}
-				.model{
-					margin-right: 20rpx;
-				}
-			}
-			.item{
-				
-				display: flex;
-				align-items: center;
-				margin-bottom: 15rpx;
-				.img{
-					height: 100rpx;
-					width: 100rpx;
-					border-radius: 18rpx;
-				}
-				.num{
-					height: 100rpx;
-					width: 50rpx;
-					line-height: 100rpx;
-					text-align: center;
-					border-radius: 18rpx;
-					font-size: 38rpx;
-					color: #9E9E9E;
-				}
-				&.current{
-					color: #e54d42;
-					.num{
-						color: #e54d42;
-					}
-				}
-				.text{
-					flex: 1;
-					margin-left: 20rpx;
-					;
-					text{
-						display: block;
-					}
-					.name{
-						font-size: 32rpx;
-						overflow: hidden;
-					}
-					.ar{
-						font-size: 24rpx;
-						overflow: hidden;
-						.point{
-							font-size: 40rpx;
-						}
-					}
-				}
-				.cuIcon-close{
-					font-size: 38rpx;
-					color: #9E9E9E;
-					width: 68rpx;
-					height: 80rpx;
-				}
-			}
-		}
-	@keyframes rotate {
-		0% {
-			transform: rotate(0deg);
-		}
-
-		100% {
-			transform: rotate(360deg);
-		}
-
-	}
+<style>
+	@import url("index.css");
 </style>

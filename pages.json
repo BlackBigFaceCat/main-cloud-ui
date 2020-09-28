@@ -38,6 +38,16 @@
 			}
 		},
 		{
+			"path": "pages/music-player/play_list",
+			"style": {
+				// 没得标题文字
+				"navigationBarTitleText": " ",
+				// 导航栏背景颜色设置为透明
+				"navigationBarBackgroundColor": "transparent",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
 			"path": "pages/tag/tag",
 			"style": {
 				"navigationBarTitleText": "分类",
