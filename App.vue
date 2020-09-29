@@ -84,7 +84,17 @@
 		}
 	}
 </script>
-
+<!-- 
+生命周期：
+onReady：页面初次渲染完成时触发 ，然后触发vue 的 mounted
+onLoad：页面加载时触发，可以用来在页面之间传参，具体的一些处理会在以后的文章详细介绍。
+onShow：页面显示时触发，当应用启动或从后台进入前台时触发。感觉相当于vue的 created
+onHide：页面隐藏时触发，当应用从前台进入后台时触发。
+onUnload：页面卸载时触发
+onBackPress：页面返回时触发 
+onPullDownRefresh：用户下拉时触发，在pages.json中的页面的style中添加enablePullDownRefresh，刷新完uni.stopPullDownRefresh停止
+onReachBottom：页面上拉触底时触发
+ -->
 <style>
 	@import './common/common.css';
 	/* 引入colorui */

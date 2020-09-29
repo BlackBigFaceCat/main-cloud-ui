@@ -25,24 +25,6 @@
 							</view>
 						</view>
 					</view>
-					<!-- <view class="album-bot flex-box">
-						<view class="flex-item">
-							<view class="iconfont">&#xe607;</view>
-							<view class="txt">{{ album.commentCount }}</view>
-						</view>
-						<view class="flex-item">
-							<view class="iconfont">&#xe639;</view>
-							<view class="txt">{{ album.shareCount }}</view>
-						</view>
-						<view class="flex-item">
-							<view class="iconfont">&#xe60e;</view>
-							<view class="txt">下载</view>
-						</view>
-						<view class="flex-item">
-							<view class="iconfont">&#xe61e;</view>
-							<view class="txt">多选</view>
-						</view>
-					</view> -->
 				</view>
 			</view>
 			<view class="album-list">
@@ -52,9 +34,8 @@
 						播放全部(共30首歌曲)
 					</view>
 				</view>
-				<mu-list :list="targetMuList" :isNav="false"></mu-list>
-				
 			</view>
+			<mu-list :list="targetMuList" :isNav="false"></mu-list>
 		</scroll-view>
 	</view>
 </template>
@@ -74,9 +55,17 @@ export default {
 	data() {
 		return {
 			// 专辑
-			album: {},
+			album: {
+				name: '',
+				creator: {
+					avatarUrl: '',
+					nickname: ''
+				},
+				description: ''
+				
+			},
 			// 背景图片
-			bgimg:'',
+			bgimg:'../../static/timg.jpg',
 			// 播放列表
 			playList: [],
 			scrollTop: 20,
@@ -91,11 +80,11 @@ export default {
 			var temp = {
 				id: '1',
 				name: '你的名字',
-				picUrl: '../../static/record.png',
+				picUrl: '../../static/timg.jpg',
 				n1: '22222222',
 				n2: '33333333'
 			}
-			return [temp, temp, temp]
+			return [temp, temp, temp,temp, temp, temp,temp, temp, temp,temp, temp, temp,temp, temp, temp]
 			// if(!this.album.tracks) return [];
 			// const t = this.album.tracks.slice(0,25);
 			// return t.map(val=>{
@@ -122,6 +111,7 @@ export default {
 		getData(id) {
 			// res.playlist.description = res.playlist.description.slice(0, 27)
 			const album = {};
+			// 页面上边的图片
 			this.bgimg = 'https://p1.music.126.net/g8pebJh7eOKwznooTm4VZw==/109951165029875607.jpg'
 			this.album = {};
 			this.playList = [];
@@ -179,11 +169,13 @@ $bgtop: -44px;
 	z-index: 2;
 }
 
+// scroll-view 范围内的背景颜色
 .page-content {
 	position: fixed;
+	background: #fff;
 	left: 0;
 	right: 0;
-	bottom: 0;
+	bottom: 90rpx; // 让最后一首歌不被导航栏挡住
 }
 .album-top {
 	position: relative;

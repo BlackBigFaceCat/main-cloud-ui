@@ -2,23 +2,68 @@
 	<view class="player-page">
 		<!-- <view class="content" :style="{marginTop:customBar+'px'}"> -->
 		<view class="content">
-			<view class="bg-img-box" :style="'background-image:url('+song.picUrl+')'">
+			<view class="bg-img-box" :style="'background-image:url('+audioData[0].view_image+')'">
 			</view>
-			<!-- 唱片拨片 -->
-			<view class="ear-phone" :style="{top:customBar*2+'rpx'}">
-				<image class="img" src="https://s3.music.126.net/mobile-new/img/needle-ip6.png?be4ebbeb6befadfcae75ce174e7db862="></image>
-			</view>
-			<!-- 转圈圈图片 -->
-			<view class="img-box" :class="[isPlay ? '' : 'stoped']" :style="{top:customBar*2+50+'rpx'}">
-				<view class="circle">
-					<image class="img" :src="song.picUrl" mode=""></image>
+			<!-- 三行歌词，圆圈转转转 -->
+			<view :class="(showView ? 'show_view' : 'hide_view')" @click='changeRic'>
+				<!-- 唱片拨片 -->
+				<view class="ear-phone" :style="{top:customBar*2+'rpx'}">
+					<image class="img" src="../../static/needle-ip6.png"></image>
 				</view>
+				<!-- 转圈圈图片 -->
+				<view class="img-box" :class="[isPlay ? '' : 'stoped']" :style="{top:customBar*2+50+'rpx'}">
+					<view class="circle">
+						<image class="img" :src="audioData[0].view_image" mode=""></image>
+					</view>
+				</view>
+				<!-- 歌词 -->
+				<scroll-view class="lyric-box" scroll-y="true">
+					<view class="ric">{{lytop}}</view>
+					<view class="ric cur">{{lycur}}</view>
+					<view class="ric">{{lybot}}</view>
+				</scroll-view>
 			</view>
-			<!-- 歌词 -->
-			<view class="lyric-box">
-				<view class="ric">{{lytop}}</view>
-				<view class="ric cur">{{lycur}}</view>
-				<view class="ric">{{lybot}}</view>
+			<!-- 全屏显示歌词，没有圆圈转转转的 -->
+			<view :class="(hiddenView ? 'show_view' : 'hide_view')" @tap='changeRic'>
+				<!-- 歌词 -->
+				<scroll-view class="lyric-box2" scroll-y="true">
+					<view class="ric">{{lytop}}</view>
+					<view class="ric cur">{{lycur}}</view>
+					<view class="ric cur">{{lycur}}</view>
+					<view class="ric cur">{{lycur}}</view>
+					<view class="ric cur">{{lycur}}</view>
+					<view class="ric cur">{{lycur}}</view>
+					<view class="ric cur">{{lycur}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+					<view class="ric">{{lybot}}</view>
+				</scroll-view>
 			</view>
 			<view class="btn-box">
 				<!-- 喜欢图标 -->
@@ -33,10 +78,10 @@
 			<!-- 播放进度条 -->
 			<view class="slider-bar">
 				<!-- 播放进度开始时间 -->
-				<view class="time start">{{curPlayTimeNum}}</view>
-				<slider class="line" :value="curPlayTime" :min="0" :max="playTime" @change="sliderChange" block-size="15"
+				<view class="time start">{{audioCurTime[0]}}:{{audioCurTime[1]}}</view>
+				<slider class="line" :value="currentTime" :min="0" :max="duration" @change="changeProgress" block-size="15"
 				 backgroundColor="rgba(255,255,255,.5)" activeColor="rgba(255,255,255,.5)" />
-				<view class="time end">{{playTimeNum}}</view>
+				<view class="time end">{{longth}}</view>
 			</view>
 			<!-- 播放状态、顺序循环、单曲循环、随机播放 -->
 			<view class="btn-groups flex-box">
@@ -49,49 +94,18 @@
 					<!-- 上一首图标 -->
 					<view class="iconfont">&#xe78a;</view>
 				</view>
-				<view class="play-btn flex-item" @click="play">
+				<view class="play-btn flex-item" @tap="playMusic">
 					<!-- 暂停状态图标 -->
 					<view v-if="!isPlay" class="iconfont">&#xe638;</view>
 					<!-- 播放状态图标 -->
 					<view v-if="isPlay" class="iconfont">&#xe76a;</view>
 				</view>
-				<view class="flex-item" @click="next(false)">
+				<view class="flex-item" @click='next'>
 					<!-- 下一首图标 -->
 					<view class="iconfont">&#xe7a5;</view>
 				</view>
 			</view>
-		</view>
-		<!-- <view class="poplist-box" :class="[opentList?'':'hide']">
-			<view class="title">
-				<text class="total">当前播放(25)</text>
-				<text class="model"  v-if="playModel==0" @click="setPlayModel">
-					<text class="iconfont">&#xe66c;</text>
-					<text>列表循环</text>
-				</text>
-				<text class="model"  v-if="playModel==1" @click="setPlayModel">
-					<text class="iconfont">&#xe66b;</text>
-					<text>随机播放</text>
-				</text>
-				<text class="model"  v-if="playModel==2" @click="setPlayModel">
-					<text class="iconfont">&#xe66d;</text>
-					<text>单曲循环</text>
-				</text>
-			</view>
-			<scroll-view scroll-y="true" style="height: 578rpx;">
-				<view class="item" :class="[index == curPlayIndex?' current':'']" v-for="(val,index) in copyAudioList" :key="index">
-					<view class="img num" v-if="val.desc">
-						{{index + 1}}
-					</view>
-					<image  v-if="!val.desc" class="img" :src="val.picUrl" mode=""></image>
-					<view class="text ellipsis" @click="initPlay(val.id,index)">
-						<text class="name ellipsis">{{val.name}}</text>
-						<text class="ar ellipsis">{{val.n1}} · {{val.n2}}</text>
-					</view>
-					<text class="cuIcon-close" @click="listCloseOne(index)"></text>
-				</view>
-			</scroll-view>
-		</view> -->
-		
+		</view>		
 	</view>
 </template>
 
@@ -101,6 +115,8 @@
 	export default {
 		data() {
 			return {
+				showView: true,
+				hiddenView: false,
 				customBar:this.CustomBar,
 				song: {
 					id: '',
@@ -110,31 +126,77 @@
 					time: 0,
 					picUrl: 'https://p1.music.126.net/g8pebJh7eOKwznooTm4VZw==/109951165029875607.jpg',
 				},
-				opentList:true,
-				playModel: 0,
-				isPlay: true,
+				playModel: 0, // 播放模式，单曲循环、随机播放
+				isPlay: false,
 				playTime: 0,
-				curPlayTime: 0,
+				curPlayTime: 0, // 播放到的时间点 单位 秒
 				curPlayIndex: 0,
-				lyric:[],
+				lyric:[], // 歌词
 				//  歌词
-				lytop:'111111111111111111111111111', // 刚播放完的歌词
-				lycur:'2222222222222222222222222222222', // 正在播放的歌词
-				lybot:'3333333333333333333333333333333', // 下一句歌词
-				showList: false,
-				copyAudioList:[]
+				lytop:'大河向东流啊', // 刚播放完的歌词
+				lycur:'你有我有全都有啊', // 正在播放的歌词
+				lybot:'风决定要走', // 下一句歌词
+				
+				// ----------------------------------------------
+				audioData: [{
+						file: "http://app.tiantai.com.cn/uploads/20200819/a25100936ec5d372c6805e5b476dbd59.mp3",
+						id: 3,
+						longth: "02:49",
+						music_id: 1,
+						name: "歌曲1",
+						num: 12,
+						view_image: "https://p1.music.126.net/g8pebJh7eOKwznooTm4VZw==/109951165029875607.jpg"
+					}
+				],
+				duration: '100', // 当前音频的长度（单位：s），只有在当前有合法的 src 时返回
+				currentTime: '0', // 播放进度时间
+				audioCurTime: ['0', '00'],
+				longth: '',
+				timer: null,
+				system: '',
+				styleObj: {
+					borderRadius: '50%',
+					height: '80rpx',
+					width: '80rpx',
+					position: 'absolute',
+					top: '50%',
+					left: '50%',
+					transform: 'translate(-50%,-50% )',
+					transformOrigin: 'center'
+				},
+				rotateTimer: null,
+				rotateDeg: 0
 			}
 		},
 		onUnload() {
+			audioContext.destroy()
 		},
 		onLoad(e) {
+			let a = this
+			audioContext.src = a.audioData[0].file
+			a.longth = a.audioData[0].longth
+			a.system = uni.getSystemInfoSync().platform
+			audioContext.onEnded((e) => {
+				clearInterval(a.timer)
+				clearInterval(a.rotateTimer)
+				a.timer = null
+				a.rotateTimer = null
+				a.isPlay = false
+				audioContext.seek(0);
+				a.audioCurTime = ['0', '00']
+				a.currentTime = '0'
+			})
 		},
 		onShow() {},
 		onReady() {
+			let a = this
+			uni.setNavigationBarTitle({
+				title: a.audioData[0].name
+			});
 		},
-		computed: {
-			// ...mapMutations(['setAudiolist','setPlaydetail','setIsplayingmusic','setIsplayactive']),			
+		computed: {	
 			playTimeNum() {
+				// 格式化播放时间
 				return this.$util.formatTime(this.playTime)
 			},
 			curPlayTimeNum() {
@@ -142,14 +204,155 @@
 			}
 		},
 		methods: {
-			prev() {
-				console.log('上一首')
-			},
 			openList() {
 				console.log('openList')
 			},
 			setPlayModel() {
-				console.log('setPlayModel')
+				console.log('setPlayModel,设置播放模式：顺序播放。')
+			},
+			
+				// 音频播放器部分:在这部分我们想展示类似于wangyi音乐的布局和功能
+				// 为了避免播放时间的语法错误，使用后端数据显示持续时间，而不是自己计算
+				next() {
+					// 下曲功能，下曲功能的主要思想是找出正在播放的歌曲的索引。
+					// 首先，清除定时器，停止旋转盖子，然后找出索引。
+					clearInterval(this.rotateTimer)
+					this.rotateTimer = null
+					let src = audioContext.src
+					//tips: (complex array may cause performance issues)
+					this.audioData.filter((currentValue, index, arr) => {
+						if (currentValue.file == src) {
+							if (index + 1 >= arr.length) {
+								clearInterval(this.timer)
+								let timer = null
+								this.isPlay = false;
+								// once click next button , pause and reset playingtime 
+								audioContext.seek(0);
+								this.currentTime = '0'
+								this.audioCurTime = ['0', '00']
+								audioContext.src = this.audioData[0].file
+								this.longth = this.audioData[0].longth
+								uni.setNavigationBarTitle({
+									title: this.audioData[0].name
+								})
+							} else {
+								clearInterval(this.timer)
+								let timer = null
+								this.isPlay = false;
+								audioContext.seek(0);
+								this.currentTime = '0'
+								this.audioCurTime = ['0', '00']
+								audioContext.src = this.audioData[index + 1].file
+								this.longth = this.audioData[index + 1].longth
+								uni.setNavigationBarTitle({
+									title: this.audioData[index + 1].name
+								})
+							}
+						} else {}
+					});
+				},
+				prev() {
+					clearInterval(this.rotateTimer)
+					this.rotateTimer = null
+					let src = audioContext.src
+					this.audioData.filter((currentValue, index, arr) => {
+						if (currentValue.file == src) {
+							if (index == 0) {
+								clearInterval(this.timer)
+								let timer = null
+								this.isPlay = false;
+								audioContext.seek(0);
+								this.currentTime = '0'
+								this.audioCurTime = ['0', '00']
+								audioContext.src = this.audioData[arr.length - 1].file
+								this.longth = this.audioData[arr.length - 1].longth
+								uni.setNavigationBarTitle({
+									title: this.audioData[arr.length - 1].name
+								});
+							} else {
+								clearInterval(this.timer)
+								let timer = null
+								this.isPlay = false;
+								audioContext.seek(0);
+								this.currentTime = '0'
+								this.audioCurTime = ['0', '00']
+								audioContext.src = this.audioData[index - 1].file
+								this.longth = this.audioData[index - 1].longth
+								uni.setNavigationBarTitle({
+									title: this.audioData[index - 1].name
+								});
+							}
+						} else {}
+					});
+				},
+				playMusic() {
+					// 只需单击中键重置持续时间
+					let duration = audioContext.duration;
+					let currentTime = audioContext.currentTime;
+					
+					this.duration = duration;
+					this.currentTime = currentTime;
+					this.audioCurTime[0] = Math.floor(Math.floor(currentTime) / 60);
+					this.audioCurTime[1] = Math.floor(currentTime) % 60;
+					if (this.isPlay) {
+						this.isPlay = false;
+						clearInterval(this.timer)
+						clearInterval(this.rotateTimer)
+						this.timer = null
+						this.rotateTimer = null
+						audioContext.pause();
+					} else {
+						this.isPlay = true;
+						this.rotateTimer = setInterval(() => {
+							this.rotateDeg++
+							this.styleObj.transform = `translate(-50%,-50%) rotate(${this.rotateDeg}deg)`
+						}, 50)
+						audioContext.play();
+						this.timer = setInterval(() => {
+							this.currentTime++
+							if (this.audioCurTime[1] > 58) {
+								this.audioCurTime[0]++
+								this.audioCurTime[1] = 0
+								this.audioCurTime[1]++
+							} else {
+								this.audioCurTime[1]++
+							}
+						}, 1000)
+					}
+				},
+				changeProgress(e) {
+					// ios 拖动slider 会出现漂移，定位不准，苹果暂时用拖动时暂停播放来规避
+					// ios在拖放音乐时暂停，Android仍然可以播放
+					audioContext.seek(e.detail.value);
+					// 拖拽时暂停音乐，以便重复加载计时器
+					if (this.system == 'ios') {
+						this.audioCurTime[0] = Math.floor(Math.floor(e.detail.value) / 60);
+						this.audioCurTime[1] = Math.floor(e.detail.value) % 60;
+						clearInterval(this.timer)
+						clearInterval(this.rotateTimer)
+						this.timer = null
+						this.rotateTimer = null
+						this.isPlay = false
+						audioContext.pause();
+					} else {
+						clearInterval(this.timer)
+						clearInterval(this.rotateTimer)
+						this.timer = null
+						this.rotateTimer = null
+						this.isPlay = false;
+						this.playMusic()
+					}
+					this.duration = audioContext.duration;
+				},
+			// 歌词切换 互斥显示
+			changeRic() {
+				if (this.showView) {
+					this.showView = false;
+					this.hiddenView = true;
+				} else {
+					this.showView = true;
+					this.hiddenView = false;
+				}
 			}
 		}
 	}
@@ -158,6 +361,14 @@
 <style lang="scss">
 	uni-page-body {
 		height: 100%;
+	}
+	// 显示样式
+	.show_view {
+		display: none;
+	}
+	// 隐藏样式
+	.hide_view {
+		display: block;
 	}
 
 	.player-page {
@@ -194,7 +405,7 @@
 			background-repeat: no-repeat;
 			background-size: cover;
 			position: absolute;
-			transform: scale(1.5);
+			transform: scale(1.5); // 下面空余部分
 		}
 		.ear-phone {
 			position: absolute;
@@ -216,7 +427,7 @@
 
 		.img-box {
 			&.stoped {
-				animation-play-state: paused;
+				animation-play-state: paused; // 属性规定动画正在运行还是暂停。paused	规定动画已暂停。 running	规定动画正在播放。
 			}
 
 			animation: rotate 12s linear .1s infinite;
@@ -247,9 +458,13 @@
 				}
 			}
 		}
-
+		// 有唱片拨片 转圈圈的歌词样式
 		.lyric-box {
 			position: absolute;
+			// line-height: 30rpx; // 歌词 字距
+			text-align: center; /*设置其文字内容水平居中*/
+			flex-direction: column;
+			
 			bottom: 390rpx;
 			width: 100%;
 			-webkit-mask-image: linear-gradient(to bottom,
@@ -259,10 +474,54 @@
 				rgba(255, 255, 255, 1) 75%,
 				rgba(255, 255, 255, .6) 85%,
 				rgba(255, 255, 255, 0) 100%);
-			height: 140rpx;
+			height: 140;
 
 			.ric {
-				text-align: center;
+				display: list-item; /*一定要将设置为inline-block，不然水平或垂直居中都不能用*/
+				// line-height: 70rpx; // 歌词 字距
+				
+				color: #F1F1F1;
+				font-size: 30rpx;
+				opacity: 0.8;
+				height: 46rpx;
+				    white-space: nowrap;
+				    overflow: hidden;
+				&.cur {
+					font-size: 32rpx;
+					opacity: 1;
+					color: #8dc63f;
+				}
+			}
+		}
+		
+		// 只有歌词时候的样式
+		.lyric-box2 {
+			position: absolute;
+			// line-height: 30rpx; // 歌词 字距
+			text-align: center; /*设置其文字内容水平居中*/
+			flex-direction: column;
+			bottom: 390rpx;
+			width: 100%;
+			-webkit-mask-image: linear-gradient(to bottom,
+				rgba(255, 255, 255, 0) 0,
+				rgba(255, 255, 255, .2) 15%,
+				rgba(255, 255, 255, .4) 15%,
+				rgba(255, 255, 255, .5) 15%,
+				rgba(255, 255, 255, .6) 15%,
+				rgba(255, 255, 255, 1) 25%,
+				rgba(255, 255, 255, 1) 75%,
+				rgba(255, 255, 255, .7) 85%,
+				rgba(255, 255, 255, .6) 85%,
+				rgba(255, 255, 255, .5) 85%,
+				rgba(255, 255, 255, .4) 85%,
+				rgba(255, 255, 255, 0) 100%);
+			height: 70%;
+		
+			.ric {
+				// display: inline-block; /*一定要将设置为inline-block，不然水平或垂直居中都不能用*/
+				// line-height: 70rpx; // 歌词 字距
+				display: list-item;
+				
 				color: #F1F1F1;
 				font-size: 30rpx;
 				opacity: 0.8;
@@ -363,87 +622,6 @@
 			}
 		}
 
-	}
-	.poplist-box{
-		position: fixed;
-		display: block;
-		bottom: 0;
-		left: 3%;
-		height: 700rpx;
-		width: 94%;
-		background-color: #F0F0F0;
-		z-index: 1001;
-		border-radius: 5% 5% 0 0;
-		&.hide{
-			bottom:-700rpx;
-		}
-		transition: all .15s linear;
-		padding: 0 0 0 20rpx;
-		.title{
-			display: flex;
-			justify-content: space-between;
-			width: 100%;
-			height: 120rpx;
-			line-height: 120rpx;
-			font-size: 34rpx;
-			.total{
-				font-size: 40rpx;
-			}
-			.model{
-				margin-right: 20rpx;
-			}
-		}
-		.item{
-			
-			display: flex;
-			align-items: center;
-			margin-bottom: 15rpx;
-			.img{
-				height: 100rpx;
-				width: 100rpx;
-				border-radius: 18rpx;
-			}
-			.num{
-				height: 100rpx;
-				width: 50rpx;
-				line-height: 100rpx;
-				text-align: center;
-				border-radius: 18rpx;
-				font-size: 38rpx;
-				color: #9E9E9E;
-			}
-			&.current{
-				color: #e54d42;
-				.num{
-					color: #e54d42;
-				}
-			}
-			.text{
-				flex: 1;
-				margin-left: 20rpx;
-				;
-				text{
-					display: block;
-				}
-				.name{
-					font-size: 32rpx;
-					overflow: hidden;
-				}
-				.ar{
-					font-size: 24rpx;
-					overflow: hidden;
-					.point{
-						font-size: 40rpx;
-					}
-				}
-			}
-			.cuIcon-close{
-				font-size: 38rpx;
-				color: #9E9E9E;
-				width: 68rpx;
-				height: 80rpx;
-			}
-		}
 	}
 	@keyframes rotate {
 		0% {
