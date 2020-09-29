@@ -115,21 +115,12 @@
 	export default {
 		data() {
 			return {
+				// showView 和 hiddenView 是两个标志位，用于控制唱片动画与歌词显示间的切换
 				showView: true,
 				hiddenView: false,
 				customBar:this.CustomBar,
-				song: {
-					id: '',
-					url: '',
-					name: '你的名字',
-					singer: '',
-					time: 0,
-					picUrl: 'https://p1.music.126.net/g8pebJh7eOKwznooTm4VZw==/109951165029875607.jpg',
-				},
 				playModel: 0, // 播放模式，单曲循环、随机播放
-				isPlay: false,
-				playTime: 0,
-				curPlayTime: 0, // 播放到的时间点 单位 秒
+				isPlay: false, // 是否正在播放
 				curPlayIndex: 0,
 				lyric:[], // 歌词
 				//  歌词
@@ -152,8 +143,9 @@
 				currentTime: '0', // 播放进度时间
 				audioCurTime: ['0', '00'],
 				longth: '',
-				timer: null,
-				system: '',
+				timer: null, // 记录定时器ID
+				rotateTimer: null,
+				system: '', // 系统信息
 				styleObj: {
 					borderRadius: '50%',
 					height: '80rpx',
@@ -164,7 +156,6 @@
 					transform: 'translate(-50%,-50% )',
 					transformOrigin: 'center'
 				},
-				rotateTimer: null,
 				rotateDeg: 0
 			}
 		},
@@ -175,8 +166,12 @@
 			let a = this
 			audioContext.src = a.audioData[0].file
 			a.longth = a.audioData[0].longth
+			// uni.getSystemInfoSync() 获取系统信息同步接口。
+			// platform	客户端平台，值域为：ios、android
 			a.system = uni.getSystemInfoSync().platform
+			// onEnded 音频自然播放结束事件
 			audioContext.onEnded((e) => {
+				// 取消由 setInterval 设置的定时器。 clearInterval(intervalID) （intervalID）要取消的定时器的 ID
 				clearInterval(a.timer)
 				clearInterval(a.rotateTimer)
 				a.timer = null
@@ -194,15 +189,7 @@
 				title: a.audioData[0].name
 			});
 		},
-		computed: {	
-			playTimeNum() {
-				// 格式化播放时间
-				return this.$util.formatTime(this.playTime)
-			},
-			curPlayTimeNum() {
-				return this.$util.formatTime(this.curPlayTime)
-			}
-		},
+		computed: {},
 		methods: {
 			openList() {
 				console.log('openList')
@@ -211,7 +198,6 @@
 				console.log('setPlayModel,设置播放模式：顺序播放。')
 			},
 			
-				// 音频播放器部分:在这部分我们想展示类似于wangyi音乐的布局和功能
 				// 为了避免播放时间的语法错误，使用后端数据显示持续时间，而不是自己计算
 				next() {
 					// 下曲功能，下曲功能的主要思想是找出正在播放的歌曲的索引。
@@ -219,14 +205,14 @@
 					clearInterval(this.rotateTimer)
 					this.rotateTimer = null
 					let src = audioContext.src
-					//tips: (complex array may cause performance issues)
+					//tips: (复杂的数组可能会导致性能问题)
 					this.audioData.filter((currentValue, index, arr) => {
 						if (currentValue.file == src) {
 							if (index + 1 >= arr.length) {
 								clearInterval(this.timer)
 								let timer = null
 								this.isPlay = false;
-								// once click next button , pause and reset playingtime 
+								// 一旦点击下一步按钮，暂停和重置播放时间
 								audioContext.seek(0);
 								this.currentTime = '0'
 								this.audioCurTime = ['0', '00']
@@ -303,11 +289,13 @@
 						audioContext.pause();
 					} else {
 						this.isPlay = true;
+						// 设置定时器，同时记录定时器ID
 						this.rotateTimer = setInterval(() => {
 							this.rotateDeg++
 							this.styleObj.transform = `translate(-50%,-50%) rotate(${this.rotateDeg}deg)`
 						}, 50)
 						audioContext.play();
+						// 设置定时器，同时记录定时器ID
 						this.timer = setInterval(() => {
 							this.currentTime++
 							if (this.audioCurTime[1] > 58) {
@@ -344,7 +332,7 @@
 					}
 					this.duration = audioContext.duration;
 				},
-			// 歌词切换 互斥显示
+			// 全屏歌词与唱片切换 互斥显示
 			changeRic() {
 				if (this.showView) {
 					this.showView = false;
